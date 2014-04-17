@@ -1,7 +1,7 @@
 (ns pixcell-clj.state)
 
-(def SIZE (+ 2    ;; 2 chars for color & palette
-             64)) ;; one char for each cell
+(def SIZE (+ 2     ;; 2 chars for color & palette
+             256)) ;; one char for each cell
 
 ;; === helpers ===
 
@@ -37,7 +37,7 @@
 (def initial
   {:palette 0
    :color 0
-   :cells (replicate 64 0)})
+   :cells (replicate 256 0)})
 
 (defn encode
   "Encode editor state to string"

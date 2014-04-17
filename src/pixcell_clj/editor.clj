@@ -23,18 +23,13 @@
 
 
 (defn grid [palette cells]
-  (let [rows (partition 8 cells)]
-    [:table
-     {:cellspacing "0"
-      :cellpadding"none"}
+  (let [rows (partition 16 cells)]
+    [:table#grid
      (seq->tag :tbody
                (for [row rows]
                  (seq->tag :tr
-                           {:height 30}
                            (for [color row]
-                             [:td
-                              {:bgcolor (nth palette color)
-                               :width 30}]))))]))
+                             [:td {:bgcolor (nth palette color)}]))))]))
 
 (def header [:h2 "✎ PixCell"])
 (def footer [:i "by @alex_pir"])
@@ -49,36 +44,57 @@
                ["◕"        "rot_clone"]
                ["◑"        "mirror_clone"]
                ["◒"        "flip_clone"]]]
-    [:table [:tbody
-             (seq->tag :tr
-                       (for [[icon url] tools]
-                         [:td
-                          [:div {:class "btn"
-                                 :onclick (str "alert(\"" url ")")}
-                           (str "&nbsp;" icon "&nbsp;")]]))]]))
+    [:table.toolbar
+     [:tbody
+      (seq->tag :tr
+                (for [[icon url] tools]
+                  [:td.button {:onclick (str "alert(\"" url "\")")}
+                   (str "&nbsp;" icon "&nbsp;")]))]]))
 
 (defn colorbar [pal col]
-  [:table [:tbody
-           (seq->tag :tr
-                     (for [c pal]
-                       [:td
-                        [:div {:class "color"
-                               :style (str "background-color:" c ";")}
-                         "&nbsp;"]]))]])
+  [:table.toolbar
+   [:tbody
+    (seq->tag :tr
+              (for [c pal]
+                [(if (= c col)
+                   :td.current-color
+                   :td.color)
+                 {:style (str "background-color:" c ";")}
+                 "&nbsp;"]))]])
 
 (def css [:style {:type "text/css"} "
-    div.btn {
-       background-color:#404040;
-       color:#FFFFFF;
-       cursor:pointer;
-       border:4px outset gray;
-       text-align:center;
+    table#grid, table.toolbar {
+       border: 0px;
+       padding: 0;
+       margin: 0;
+       border-spacing: 0;
     }
-    div.color {
-       width:30px;
-       height:30px;
+    table#grid, tr {
+       height: 30px;
+       padding: 0;
+    }
+    table#grid td {
+       width: 30px;
+       padding: 0;
+    }
+    table.toolbar td.button {
+       background-color: #404040;
+       color: #FFFFFF;
        cursor: pointer;
-       border: 4px;
+       border: 4px outset gray;
+       text-align: center;
+    }
+    table.toolbar td.color,
+    table.toolbar td.current-color {
+       width: 40px;
+       height: 40px;
+       cursor: pointer;
+       border: 4px outset gray;
+       padding: 0;
+       margin: 0;
+    }
+    table.toolbar td.current-color {
+       border: 4bx inset gray;
     }
     "])
 
@@ -90,7 +106,7 @@
                 (or (decode state-str)
                     initial))      ;; can contain errors
         pal (nth PALETTES (:palette state))
-        col (:color state)]
+        col (nth pal (:color state))]
     (html
      [:html
       [:head
