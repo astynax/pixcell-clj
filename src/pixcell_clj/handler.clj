@@ -5,7 +5,7 @@
             [compojure.route :as route]))
 
 (defroutes app-routes
-  (GET "/" [state op] (editor/ui state op))
+  (GET "/" [state op arg] (editor/ui state op arg))
   (route/resources "/")
   (route/not-found "Not Found"))
 
