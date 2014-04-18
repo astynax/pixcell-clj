@@ -1,7 +1,10 @@
 (ns pixcell-clj.state)
 
+(def MAX-COLOR 7)
+(def CELL-COUNT 256)
+
 (def SIZE (+ 2     ;; 2 chars for color & palette
-             256)) ;; one char for each cell
+             CELL-COUNT)) ;; one char for each cell
 
 ;; === helpers ===
 
@@ -30,6 +33,11 @@
   (clojure.string/join
    (mapcat (comp byte->hex pair->byte)
            (partition 2 cs))))
+
+;; tries to convert string to integer, and returns the 'default for bad strings
+(defn try-int [s default]
+  (try (Integer/parseInt s)
+       (catch NumberFormatException _ default)))
 
 ;; === API ===
 
@@ -68,7 +76,7 @@
 (defn set-color
   "Sets the current color"
   [state color]
-  {:pre [(<= 0 color 15)]}
+  {:pre [(<= 0 color MAX-COLOR)]}
   (assoc state :color color))
 
 (defn cycle-palette
@@ -78,3 +86,32 @@
   (update-in state
              [:palette]
              #(mod (inc %) palette-count)))
+
+(defn set-cell
+  "Sets cell color to current color"
+  [state cell]
+  (let [{col :color cs :cells } state
+        cs (if (zero? cell)
+             (cons col (rest cs))
+             (concat (take cell cs)
+                     [col]
+                     (drop (inc cell) cs)))]
+    (assoc state :cells cs)))
+
+;; === Operations ===
+
+(def operations {"set-color" (fn [state arg]
+                               (set-color state
+                                          (min MAX-COLOR
+                                               (try-int arg 0))))
+                 "set-cell" (fn [state arg]
+                              (set-cell state
+                                        (min (dec CELL-COUNT)
+                                             (try-int arg 0))))
+                 })
+
+(defn perform
+  [state op arg]
+  (if-let [op-fn (operations op nil)]
+    (op-fn state arg)
+    state))

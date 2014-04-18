@@ -21,15 +21,23 @@
   ([tag attrs items]
      (vec (cons tag (cons attrs items)))))
 
+(defn op
+  ([op] (str "perform(\"" op "\")"))
+  ([op arg] (str "perform(\"" op "\", \"" arg "\")")))
 
+;; seq "item1","item2"... -> seq [0 "item1"],[1 "item2]...
+(def enumerate (partial map vector (range)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn grid [palette cells]
-  (let [rows (partition 16 cells)]
+  (let [rows (partition 16 (enumerate cells))]
     [:table#grid
      (seq->tag :tbody
                (for [row rows]
                  (seq->tag :tr
-                           (for [color row]
-                             [:td {:bgcolor (nth palette color)}]))))]))
+                           (for [[idx color] row]
+                             [:td {:bgcolor (nth palette color)
+                                   :onclick (op "set-cell" idx)}]))))]))
 
 (def header [:h2 "✎ PixCell"])
 (def footer [:i "by @alex_pir"])
@@ -37,29 +45,30 @@
 (def toolbar
   (let [tools [["■ New"    ""]
                ["▧ Fill"   "fill"]
-               ["░ Random" "rand_fill"]
+               ["░ Random" "rand-fill"]
                ["⇄ Mirror" "mirror"]
                ["⇅ Flip"   "flip"]
-               ["◰"        "simple_clone"]
-               ["◕"        "rot_clone"]
-               ["◑"        "mirror_clone"]
-               ["◒"        "flip_clone"]]]
+               ["◰"        "simple-clone"]
+               ["◕"        "rot-clone"]
+               ["◑"        "mirror-clone"]
+               ["◒"        "flip-clone"]]]
     [:table.toolbar
      [:tbody
       (seq->tag :tr
-                (for [[icon url] tools]
-                  [:td.button {:onclick (str "alert(\"" url "\")")}
+                (for [[icon op-name] tools]
+                  [:td.button {:onclick (op op-name)}
                    (str "&nbsp;" icon "&nbsp;")]))]]))
 
 (defn colorbar [pal col]
   [:table.toolbar
    [:tbody
     (seq->tag :tr
-              (for [c pal]
-                [(if (= c col)
+              (for [[idx c] (map vector (range) pal)]
+                [(if (= idx col)
                    :td.current-color
                    :td.color)
-                 {:style (str "background-color:" c ";")}
+                 {:style (str "background-color:" c ";")
+                  :onclick (op "set-color" idx)}
                  "&nbsp;"]))]])
 
 (def css [:style {:type "text/css"} "
@@ -94,19 +103,33 @@
        margin: 0;
     }
     table.toolbar td.current-color {
-       border: 4bx inset gray;
+       border: 4px inset gray;
     }
     "])
 
+(def callback "
+  function perform(what, arg) {
+    if (!what) {
+      var url = '/';
+    } else {
+      var url = '/?state=' + state + '&op=' + what;
+    }
+    if (arg) {
+      url = url + '&arg=' + arg
+    }
+    window.location = url;
+  };")
+
 (defn ui
   "Editor UI page"
-  [state-str op]
-  (let [state (if (nil? state-str) ;; can be empty
+  [state-str op arg]
+  (let [old-state (if (nil? state-str) ;; can be empty
                 initial
                 (or (decode state-str)
                     initial))      ;; can contain errors
+        state (perform old-state op arg)
         pal (nth PALETTES (:palette state))
-        col (nth pal (:color state))]
+        col (:color state)]
     (html
      [:html
       [:head
@@ -114,7 +137,8 @@
        css
        ;; current state as text
        [:script {:type "text/javascript"}
-        (str "var state=\"" (encode state) "\";")]]
+        (str "var state=\"" (encode state) "\";")
+        callback]]
       [:body
        header
        toolbar
