@@ -7,4 +7,5 @@
   :ring {:handler pixcell-clj.handler/app}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring-mock "0.1.5"]]}})
+                        [ring-mock "0.1.5"]]}
+   :uberjar {:aot :all}})
