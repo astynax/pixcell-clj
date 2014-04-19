@@ -1,7 +1,9 @@
 (ns pixcell-clj.state)
 
-(def MAX-COLOR 7)
-(def CELL-COUNT 256)
+(def COLOR-COUNT 8)
+(def ROWS 16)
+(def COLS 16)
+(def CELL-COUNT (* ROWS COLS))
 
 (def SIZE (+ 2     ;; 2 chars for color & palette
              CELL-COUNT)) ;; one char for each cell
@@ -45,7 +47,7 @@
 (def initial
   {:palette 0
    :color 0
-   :cells (replicate 256 0)})
+   :cells (replicate CELL-COUNT 0)})
 
 (defn encode
   "Encode editor state to string"
@@ -76,7 +78,7 @@
 (defn set-color
   "Sets the current color"
   [state color]
-  {:pre [(<= 0 color MAX-COLOR)]}
+  {:pre [(<= 0 color (dec COLOR-COUNT))]}
   (assoc state :color color))
 
 (defn cycle-palette
@@ -98,17 +100,69 @@
                      (drop (inc cell) cs)))]
     (assoc state :cells cs)))
 
+(defn- map-rows
+  [fn state _]
+  (let [cs (->> (:cells state)
+                (partition COLS)
+                fn
+                (apply concat))]
+    (assoc state :cells cs)))
+
+(defn- map-cells
+  [fn state _]
+  (let [cs (map fn (:cells state))]
+    (assoc state :cells cs)))
+
+(defn- mirror-clone
+  [coll]
+  (let [half-len (/ (count coll) 2)
+        src (take half-len coll)]
+    (concat src (reverse src))))
+
 ;; === Operations ===
 
-(def operations {"set-color" (fn [state arg]
-                               (set-color state
-                                          (min MAX-COLOR
-                                               (try-int arg 0))))
-                 "set-cell" (fn [state arg]
-                              (set-cell state
-                                        (min (dec CELL-COUNT)
-                                             (try-int arg 0))))
-                 })
+(def operations
+  {"set-color"
+   (fn [state arg]
+     (set-color state
+                (min (dec COLOR-COUNT)
+                     (try-int arg 0))))
+   "set-cell"
+   (fn [state arg]
+     (set-cell state
+               (min (dec CELL-COUNT)
+                    (try-int arg 0))))
+
+   "cycle-palette"
+   (fn [state _] (cycle-palette state 3))
+
+   "fill"
+   (fn [state _]
+     (assoc state
+       :cells (replicate CELL-COUNT (:color state))))
+
+   "rand-fill"
+   (partial map-cells (fn [_] (rand-int COLOR-COUNT)))
+
+   "flip"
+   (partial map-rows reverse)
+
+   "mirror"
+   (partial map-rows (partial map reverse))
+
+   "flip-clone"
+   (partial map-rows mirror-clone)
+
+   "mirror-clone"
+   (partial map-rows (partial map mirror-clone))
+
+   "simple-clone"
+   (partial map-rows (comp (partial map mirror-clone)
+                           mirror-clone))
+
+   "cycle-colors"
+   (partial map-cells #(mod (inc %) COLOR-COUNT))
+   })
 
 (defn perform
   [state op arg]

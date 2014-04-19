@@ -48,10 +48,11 @@
                ["░ Random" "rand-fill"]
                ["⇄ Mirror" "mirror"]
                ["⇅ Flip"   "flip"]
-               ["◰"        "simple-clone"]
+               ["▟"        "simple-clone"]
                ["◕"        "rot-clone"]
-               ["◑"        "mirror-clone"]
-               ["◒"        "flip-clone"]]]
+               ["▐"        "mirror-clone"]
+               ["▄"        "flip-clone"]
+               ["⊛"        "cycle-colors"]]]
     [:table.toolbar
      [:tbody
       (seq->tag :tr
@@ -63,13 +64,18 @@
   [:table.toolbar
    [:tbody
     (seq->tag :tr
-              (for [[idx c] (map vector (range) pal)]
-                [(if (= idx col)
-                   :td.current-color
-                   :td.color)
-                 {:style (str "background-color:" c ";")
-                  :onclick (op "set-color" idx)}
-                 "&nbsp;"]))]])
+              (cons
+               [:td.button
+                {:onclick (op "cycle-palette")}
+                "⇸"]
+               (for [[idx c] (map vector (range) pal)]
+                 [(if (= idx col)
+                    :td.current-color
+                    :td.color)
+                  {:style (str "background-color:" c ";")
+                   :onclick (op "set-color" idx)}
+                  "&nbsp;"]))
+              )]])
 
 (def css [:style {:type "text/css"} "
     table#grid, table.toolbar {
