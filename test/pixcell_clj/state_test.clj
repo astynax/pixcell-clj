@@ -38,8 +38,24 @@
               (cycle-palette initial 2)))
     ;; palette count must be positive
     (is (thrown-with-msg? AssertionError #"Assert failed"
-                          (cycle-palette initial 0)))))
+                          (cycle-palette initial 0))))
 
+  (testing "set-cell"
+    (let [s (set-color initial 1)]
+      ;; cell must change the value
+      (is (not= s (set-cell s 64)))
+      ;; setting of different cells
+      ;; must produce different states
+      (is (not= (set-cell s 1) (set-cell s 2))))
+    ;; operations must be commative
+    (is (= (-> initial
+               (set-color 1) (set-cell 10)
+               (set-color 2) (set-cell 100)
+               (set-color 0))
+           (-> initial
+               (set-color 2) (set-cell 100)
+               (set-color 1) (set-cell 10)
+               (set-color 0))))))
 
 (testing "Codec"
   (testing "for SIZE"
