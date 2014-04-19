@@ -1,6 +1,7 @@
 (ns pixcell-clj.state)
 
-(def COLOR-COUNT 8)
+(def COLOR-COUNT 16)
+(def PAL-COUNT 4)
 (def ROWS 16)
 (def COLS 16)
 (def CELL-COUNT (* ROWS COLS))
@@ -119,6 +120,14 @@
         src (take half-len coll)]
     (concat src (reverse src))))
 
+(defn- shift-color
+  [c]
+  (let [max-c (dec COLOR-COUNT)]
+    (if (or (= c 0) (= c max-c)) c
+        (let [cc (inc c)]
+          (if (>= cc max-c)
+            1 cc)))))
+
 ;; === Operations ===
 
 (def operations
@@ -134,7 +143,7 @@
                     (try-int arg 0))))
 
    "cycle-palette"
-   (fn [state _] (cycle-palette state 3))
+   (fn [state _] (cycle-palette state PAL-COUNT))
 
    "fill"
    (fn [state _]
@@ -161,7 +170,7 @@
                            mirror-clone))
 
    "cycle-colors"
-   (partial map-cells #(mod (inc %) COLOR-COUNT))
+   (partial map-cells shift-color)
    })
 
 (defn perform

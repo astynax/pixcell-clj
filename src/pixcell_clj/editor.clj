@@ -3,16 +3,19 @@
   (:require [pixcell-clj.state :refer :all]))
 
 (def PALETTES [;; common
-               ["#000000" "#0000FF" "#00FF00" "#00FFFF"
-                "#FF0000" "#FF00FF" "#FFFF00" "#FFFFFF"]
+               ["#000000" "#7F007F" "#FF00FF" "#00007F" "#0000FF" "#007F7F" "#00FFFF" "#007F00"
+                "#00FF00" "#7F7F00" "#FFFF00" "#7F0000" "#FF0000" "#7F7F7F" "#4F4F4F" "#FFFFFF"]
+               ;; HUSL
+               ["#000000" "#EA0064" "#C55600" "#9E6E00" "#847800" "#668100" "#008B12" "#008863"
+                "#00867C" "#00848F" "#0081A9" "#0071F4" "#AC33FF" "#D300D1" "#E000A2" "#FFFFFF"]
                ;; reds
-               ["#000000" "#200810" "#401020" "#601830"
-                "#802040" "#BB2850" "#DD3060" "#FF3870"]
+               ["#000000" "#100408" "#200810" "#300A0F" "#401020" "#501428" "#601830" "#701A38"
+                "#802040" "#AA2448" "#BB2850" "#CC2A58" "#DD3060" "#EE3468" "#FF3870" "#FFFFFF"]
                ;; greens
-               ["#000000" "#102000" "#204000" "#306000"
-                "#408000" "#50BB00" "#60DD00" "#70FF00"]])
+               ["#000000" "#081000" "#102000" "#183000" "#204000" "#285000" "#306000" "#387000"
+                "#408000" "#489000" "#50AA00" "#58BB00" "#60CC00" "#68DD00" "#70EE00" "#FFFFFF"]])
 
-(def PAL-COUNT 3)
+(assert (= (count PALETTES) PAL-COUNT))
 
 
 (defn- seq->tag
@@ -43,17 +46,17 @@
 (def footer [:i "by @alex_pir"])
 
 (def toolbar
-  (let [tools [["■ New"    ""]
-               ["▧ Fill"   "fill"]
-               ["░ Random" "rand-fill"]
-               ["⇄ Mirror" "mirror"]
-               ["⇅ Flip"   "flip"]
-               ["▟"        "simple-clone"]
-               ["◕"        "rot-clone"]
-               ["▐"        "mirror-clone"]
-               ["▄"        "flip-clone"]
-               ["⊛"        "cycle-colors"]]]
-    [:table.toolbar
+  (let [tools [["■ New"  ""]
+               ["▧ Fill" "fill"]
+               ["░ Rnd"  "rand-fill"]
+               ["⇄"      "mirror"]
+               ["⇅"      "flip"]
+               ["▟"      "simple-clone"]
+               ["◕"      "rot-clone"]
+               ["▐"      "mirror-clone"]
+               ["▄"      "flip-clone"]
+               ["⊛"      "cycle-colors"]]]
+    [:table.toolbar {:width (* 16 30)}
      [:tbody
       (seq->tag :tr
                 (for [[icon op-name] tools]
@@ -61,7 +64,8 @@
                    (str "&nbsp;" icon "&nbsp;")]))]]))
 
 (defn colorbar [pal col]
-  [:table.toolbar
+  [:table.toolbar {:width (* 16 30)
+                   :height 20}
    [:tbody
     (seq->tag :tr
               (cons
@@ -101,8 +105,6 @@
     }
     table.toolbar td.color,
     table.toolbar td.current-color {
-       width: 40px;
-       height: 40px;
        cursor: pointer;
        border: 4px outset gray;
        padding: 0;
