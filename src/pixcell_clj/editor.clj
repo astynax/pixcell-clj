@@ -43,7 +43,7 @@
                                    :onclick (op "set-cell" idx)}]))))]))
 
 (def header [:h2 "✎ PixCell"])
-(def footer [:i "by @alex_pir"])
+(def footer [:i "by astynax"])
 
 (def toolbar
   (let [tools [["■ New"  ""]
@@ -52,7 +52,7 @@
                ["⇄"      "mirror"]
                ["⇅"      "flip"]
                ["▟"      "simple-clone"]
-               ["◕"      "rot-clone"]
+               ;; ["◕"      "rot-clone"]
                ["▐"      "mirror-clone"]
                ["▄"      "flip-clone"]
                ["⊛"      "cycle-colors"]]]
@@ -132,16 +132,16 @@
   "Editor UI page"
   [state-str op arg]
   (let [old-state (if (nil? state-str) ;; can be empty
-                initial
-                (or (decode state-str)
-                    initial))      ;; can contain errors
+                    initial
+                    (or (decode state-str)
+                        initial))      ;; can contain errors
         state (perform old-state op arg)
         pal (nth PALETTES (:palette state))
         col (:color state)]
     (html
      [:html
       [:head
-       [:title "PixCell by @alex_pir"]
+       [:title "PixCell by astynax"]
        css
        ;; current state as text
        [:script {:type "text/javascript"}
