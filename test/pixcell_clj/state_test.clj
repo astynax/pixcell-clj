@@ -2,8 +2,6 @@
   (:require [pixcell-clj.state :refer :all]
             [clojure.test :refer :all]))
 
-(def PAL-COUNT 3)
-
 (def some-state
   (-> initial
       (set-color 5)
