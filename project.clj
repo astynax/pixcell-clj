@@ -5,6 +5,7 @@
                  [hiccup "1.0.5"]
                  [garden "1.3.9"]]
   :plugins [[lein-ring "0.12.5"]]
-  :ring {:handler pixcell-clj.handler/app}
+  :ring {:handler pixcell-clj.handler/app
+         :port 5000}
   :profiles
   {:uberjar {:aot :all}})
