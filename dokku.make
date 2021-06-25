@@ -4,13 +4,13 @@ TAG := dokku/${NAME}:latest
 HOST := do
 
 build:
-	docker build --tag ${TAG} .
+	podman build --tag ${TAG} .
 
 run:
-	docker run --rm -p 8000:3000 ${TAG}
+	podman run --rm -p 8000:3000 ${TAG}
 
 deploy: build
-	docker save ${TAG} | ssh ${HOST} \
+	podman save ${TAG} | ssh ${HOST} \
 		"docker load | dokku tags:deploy ${NAME} latest"
 
 .PHONY: build run deploy
